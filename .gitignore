@@ -34,6 +34,12 @@ parse_design.py
 .coverage
 htmlcov/
 
+# Task Spec & Documentation Exclusions
+requirements.md
+roadmap.md
+*.docx
+task #3.docx
+
 # IDE & OS Metadata
 .vscode/
 .idea/
