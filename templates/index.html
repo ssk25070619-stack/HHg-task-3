@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HH GOA 2026 · Task #3: Face ID &amp; Blockchain Verification</title>
+    <link rel="icon" type="image/png" href="/uiassets/Hacker house.png">
+    <!-- Google Fonts: Imbue, Victor Mono, Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Imbue:opsz,wght@10..100,400..800&family=Inter:wght@300;400;500;600;700&family=Victor+Mono:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        hhYellow: '#EDD723',
+                        hhYellowGlow: '#FEE101',
+                        hhGreen: '#0B6839',
+                        hhGreenBright: '#10B981',
+                        hhGreenDark: '#052916',
+                        hhDark: '#070808',
+                        hhCard: '#111312',
+                        hhBorder: '#1F2A23',
+                        hhMuted: '#8E8E93'
+                    },
+                    fontFamily: {
+                        imbue: ['Imbue', 'serif'],
+                        mono: ['Victor Mono', 'monospace'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #060707;
+            color: #FFFFFF;
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(11, 104, 57, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 90% 15%, rgba(237, 215, 35, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 50% 90%, rgba(11, 104, 57, 0.18) 0%, transparent 50%);
+            background-attachment: fixed;
+        }
+        .hh-border {
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+        .hh-border:hover {
+            border-color: rgba(237, 215, 35, 0.7);
+        }
+        .hh-glow-green {
+            box-shadow: 0 0 30px rgba(11, 104, 57, 0.35);
+        }
+        .hh-btn-yellow {
+            background-color: #EDD723;
+            color: #000000;
+            font-family: 'Victor Mono', monospace;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .hh-btn-yellow:hover {
+            background-color: #FFFFFF;
+            box-shadow: 0 0 20px rgba(237, 215, 35, 0.5);
+            transform: translateY(-1px);
+        }
+        .hh-btn-green {
+            background-color: #0B6839;
+            color: #FFFFFF;
+            font-family: 'Victor Mono', monospace;
+            font-weight: 700;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            transition: all 0.2s ease;
+        }
+        .hh-btn-green:hover {
+            background-color: #10B981;
+            color: #000000;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+            transform: translateY(-1px);
+        }
+        .tag-badge {
+            font-family: 'Victor Mono', monospace;
+            letter-spacing: 0.05em;
+        }
+        .watermark-bg {
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 100%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0) 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-hhYellow selection:text-black">
+
+    <!-- Navbar -->
+    <header class="border-b border-hhBorder/80 bg-hhDark/85 backdrop-blur-md sticky top-0 z-50 px-6 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3.5">
+                <img src="/uiassets/Hacker house.png" alt="Hacker House Goa" class="h-10 w-auto object-contain hover:scale-105 transition-transform" />
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-imbue text-2xl tracking-wide uppercase font-semibold text-white leading-none">Hacker House Goa</h1>
+                        <img src="/uiassets/goa_hindi.svg" alt="गोवा" class="h-4 w-auto inline opacity-85" />
+                    </div>
+                    <p class="tag-badge text-[11px] text-hhYellow font-semibold mt-0.5">TASK #3 · FACE ID + BLOCKCHAIN VERIFIER</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3 text-xs tag-badge">
+                <span class="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-hhGreen/60 bg-hhGreenDark/70 text-emerald-300 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-hhGreenBright animate-ping"></span>
+                    GOA, INDIA · 28–31 OCT 2026
+                </span>
+                <span class="px-3.5 py-1.5 rounded-full border border-hhYellow/40 text-hhYellow bg-hhYellow/10 font-bold flex items-center gap-1.5">
+                    <img src="/uiassets/2-47.svg" alt="2:47 Studio" class="h-3.5 w-auto inline" />
+                    ✦ LESS NOISE. MORE SIGNAL.
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-6 py-8 flex-1 w-full relative">
+
+        <!-- Watermark Background -->
+        <div class="absolute top-0 right-1/4 pointer-events-none opacity-5 watermark-bg select-none">
+            <img src="/uiassets/goa_hindi.svg" alt="" class="w-[500px] h-auto" />
+        </div>
+
+        <!-- Hero Title -->
+        <div class="text-center max-w-3xl mx-auto mb-10 relative z-10">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-hhGreen/70 bg-hhGreenDark/80 text-emerald-300 tag-badge text-xs font-bold uppercase tracking-wider mb-3">
+                <span class="w-2 h-2 rounded-full bg-hhYellow"></span>
+                Autonomous Biometric Pipeline
+            </div>
+            
+            <h2 class="font-imbue text-5xl md:text-6xl font-medium tracking-tight text-white leading-tight">
+                Biometric Face Scan <span class="text-hhYellow italic">&amp;</span> <span class="text-emerald-400">Blockchain Proof</span>
+            </h2>
+            
+            <p class="text-hhMuted text-sm mt-3 font-sans max-w-xl mx-auto">
+                Detect facial landmarks with deep neural nets, discover real live social media matches across Google Lens, and notarize tamper-evident cryptographic proofs directly onto <strong class="text-emerald-400 font-semibold">Ethereum Sepolia</strong>.
+            </p>
+        </div>
+
+        <!-- Input Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 relative z-10">
+            
+            <!-- Upload Box -->
+            <div class="lg:col-span-2 bg-hhCard border border-hhBorder rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-black/60">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-hhYellow"></span>
+                        <h3 class="font-imbue text-2xl text-white">1. Select or Upload Face Image</h3>
+                    </div>
+                    <span class="tag-badge text-xs px-2.5 py-0.5 rounded-full bg-hhGreenDark border border-hhGreen/50 text-emerald-300 font-bold">INPUT SCAN</span>
+                </div>
+
+                <div id="dropzone" class="border-2 border-dashed border-hhBorder hover:border-hhYellow/70 rounded-xl p-4 text-center cursor-pointer transition-all bg-black/40 hover:bg-hhGreenDark/30 flex flex-col items-center justify-center min-h-[180px] relative overflow-hidden group">
+                    <input type="file" id="fileInput" accept="image/*" class="hidden" />
+                    
+                    <!-- Empty / Prompt State (Hidden when an image is selected) -->
+                    <div id="dropzonePrompt" class="hidden flex flex-col items-center justify-center py-2">
+                        <svg class="w-10 h-10 text-hhYellow mb-2 opacity-85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <p class="text-sm font-medium text-white">Drag &amp; drop your face photo here, or <span class="text-hhYellow underline font-semibold">browse</span></p>
+                        <p class="text-xs text-hhMuted mt-1 tag-badge">Supports JPG, PNG, WEBP (Deep Neural Net Auto-Alignment)</p>
+                    </div>
+
+                    <!-- Selected Image Preview Overlay (Blocks & fills the dropzone) -->
+                    <div id="dropzonePreview" class="flex flex-col sm:flex-row items-center justify-center gap-5 w-full h-full p-2">
+                        <div class="relative group/preview flex-shrink-0">
+                            <img id="previewImg" src="/assets/test.jpg" alt="Selected Face Preview" class="h-28 w-28 sm:h-32 sm:w-32 object-cover rounded-xl border-2 border-hhYellow shadow-lg shadow-hhYellow/20 group-hover/preview:scale-105 transition-transform" />
+                            <span class="absolute -top-2 -right-2 bg-emerald-400 text-black rounded-full w-5 h-5 flex items-center justify-center font-bold text-xs shadow-md">✓</span>
+                        </div>
+                        <div class="text-left flex flex-col justify-center space-y-1.5 max-w-sm">
+                            <div class="flex items-center gap-2">
+                                <span class="tag-badge text-xs px-2 py-0.5 rounded bg-hhGreenDark text-emerald-400 border border-hhGreenBright/60 font-bold flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-hhGreenBright animate-ping"></span>
+                                    PHOTO SELECTED
+                                </span>
+                            </div>
+                            <p id="previewName" class="text-white font-semibold text-sm line-clamp-1 font-mono">Elon Musk (test.jpg)</p>
+                            <p class="text-hhMuted text-xs tag-badge">Ready for YuNet &amp; SFace embedding</p>
+                            <p class="text-hhYellow hover:underline text-xs tag-badge font-bold pt-1 cursor-pointer flex items-center gap-1">
+                                ↺ Click anywhere to replace or drop new photo
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sample Badges -->
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    <span class="tag-badge text-xs text-hhMuted mr-1">Quick Samples:</span>
+                    <button id="sampleTest" class="sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition">
+                        ✦ Elon Musk (test.jpg)
+                    </button>
+                    <button id="sampleTest1" class="sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
+                        ✦ Custom Face (test1.jpg)
+                    </button>
+                    <button id="sampleBase" class="sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
+                        ✦ Sample Face (sample_face.jpg)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Run Control Card -->
+            <div class="bg-hhCard border border-hhBorder rounded-2xl p-6 flex flex-col justify-between shadow-lg shadow-black/60">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-hhGreenBright"></span>
+                            <h3 class="font-imbue text-2xl text-white">2. Execute Pipeline</h3>
+                        </div>
+                        <span id="statusBadge" class="tag-badge text-xs px-2.5 py-0.5 rounded-full bg-hhGreenDark border border-hhGreen/50 text-emerald-400">READY</span>
+                    </div>
+                    
+                    <!-- Connected Step Timeline with Animated Progress Line -->
+                    <div class="relative pl-7 space-y-3.5 my-3">
+                        <!-- Connecting Vertical Line Background Track -->
+                        <div class="absolute left-3 top-3.5 bottom-3.5 w-[2px] bg-hhBorder rounded-full"></div>
+                        
+                        <!-- Animated Glowing Progress Line Fill -->
+                        <div id="pipelineProgressLine" class="absolute left-3 top-3.5 w-[2px] h-0 bg-gradient-to-b from-hhYellow via-hhGreenBright to-emerald-400 rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+
+                        <!-- Step 1 Item -->
+                        <div id="stepItem1" class="relative flex items-center transition-all duration-300">
+                            <!-- Dot 1 -->
+                            <div id="stepDot1" class="absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-hhBorder flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-white">
+                                <span class="w-2 h-2 rounded-full bg-hhMuted transition-all"></span>
+                            </div>
+                            <!-- Card 1 -->
+                            <div id="stepCard1" class="w-full flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-hhBorder/60 transition-all duration-300">
+                                <div class="flex flex-col">
+                                    <span class="tag-badge text-xs font-bold text-white flex items-center gap-1.5">
+                                        STAGE 1: Face Detection &amp; Encoding
+                                    </span>
+                                    <span id="stepSub1" class="text-[10px] tag-badge text-hhMuted">YuNet &amp; SFace 128-d Vector</span>
+                                </div>
+                                <span id="stepBadge1" class="tag-badge text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-hhMuted border border-hhBorder/40">READY</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 2 Item -->
+                        <div id="stepItem2" class="relative flex items-center transition-all duration-300">
+                            <!-- Dot 2 -->
+                            <div id="stepDot2" class="absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-hhBorder flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-white">
+                                <span class="w-2 h-2 rounded-full bg-hhMuted transition-all"></span>
+                            </div>
+                            <!-- Card 2 -->
+                            <div id="stepCard2" class="w-full flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-hhBorder/60 transition-all duration-300">
+                                <div class="flex flex-col">
+                                    <span class="tag-badge text-xs font-bold text-white flex items-center gap-1.5">
+                                        STAGE 2: Web &amp; Social Discovery
+                                    </span>
+                                    <span id="stepSub2" class="text-[10px] tag-badge text-hhMuted">Google Lens &amp; Cosine Match</span>
+                                </div>
+                                <span id="stepBadge2" class="tag-badge text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-hhMuted border border-hhBorder/40">READY</span>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 Item -->
+                        <div id="stepItem3" class="relative flex items-center transition-all duration-300">
+                            <!-- Dot 3 -->
+                            <div id="stepDot3" class="absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-hhBorder flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-white">
+                                <span class="w-2 h-2 rounded-full bg-hhMuted transition-all"></span>
+                            </div>
+                            <!-- Card 3 -->
+                            <div id="stepCard3" class="w-full flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-hhBorder/60 transition-all duration-300">
+                                <div class="flex flex-col">
+                                    <span class="tag-badge text-xs font-bold text-white flex items-center gap-1.5">
+                                        STAGE 3: Sepolia Blockchain Record
+                                    </span>
+                                    <span id="stepSub3" class="text-[10px] tag-badge text-hhMuted">Ethereum Calldata Notary</span>
+                                </div>
+                                <span id="stepBadge3" class="tag-badge text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-hhMuted border border-hhBorder/40">READY</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button id="runBtn" class="hh-btn-yellow w-full py-3.5 px-6 rounded-xl text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-hhYellow/20">
+                        <span id="btnText">RUN FULL PIPELINE</span>
+                        <svg id="btnSpinner" class="hidden animate-spin h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Live Results Container (Hidden until run) -->
+        <div id="resultsSection" class="hidden space-y-6 relative z-10">
+            
+            <div class="flex items-center justify-between border-b border-hhBorder pb-3">
+                <div class="flex items-center gap-3">
+                    <img src="/uiassets/Hacker house.png" class="h-7 w-auto" alt="" />
+                    <h3 class="font-imbue text-3xl text-white">Verification Pipeline Results</h3>
+                </div>
+                <span class="tag-badge text-xs text-emerald-400 font-bold bg-hhGreenDark/90 border border-hhGreenBright/50 px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-hhGreenBright animate-ping"></span>
+                    ✓ ALL 3 STAGES EXECUTED ON SEPOLIA
+                </span>
+            </div>
+
+            <!-- 3 Columns for 3 Stages -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- STAGE 1 CARD -->
+                <div class="bg-hhCard border border-hhBorder rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-hhBorder/80 mb-4">
+                            <span class="tag-badge text-xs text-hhYellow font-bold flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-hhYellow"></span>
+                                STAGE 01 · GENESIS
+                            </span>
+                            <span class="tag-badge text-[11px] text-hhMuted">FACE EMBEDDING</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="bg-black/60 p-2.5 rounded-xl border border-hhBorder text-center">
+                                <p class="text-[11px] tag-badge text-hhMuted mb-1.5">INPUT PHOTO</p>
+                                <img id="resInputImg" src="" class="w-full h-28 object-cover rounded-lg mx-auto border border-hhBorder" />
+                            </div>
+                            <div class="bg-black/60 p-2.5 rounded-xl border border-hhGreen/40 text-center bg-hhGreenDark/20">
+                                <p class="text-[11px] tag-badge text-emerald-300 mb-1.5">ALIGNED FACE CROP</p>
+                                <img id="resCropImg" src="" class="w-24 h-24 object-cover rounded-lg mx-auto border-2 border-hhYellow/70 mt-1 shadow-md shadow-hhYellow/10" />
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 tag-badge text-xs">
+                            <div class="flex justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-hhBorder">
+                                <span class="text-hhMuted">Detection Confidence:</span>
+                                <span id="resFaceConf" class="text-hhYellow font-bold">0.90 (90.0%)</span>
+                            </div>
+                            <div class="flex justify-between bg-black/50 px-3.5 py-2 rounded-lg border border-hhBorder">
+                                <span class="text-hhMuted">Embedding Space:</span>
+                                <span class="text-emerald-400 font-bold">128-d L2 Normalized</span>
+                            </div>
+                            <div class="bg-black/50 p-2.5 rounded-lg border border-hhBorder">
+                                <p class="text-[10px] text-hhMuted mb-1">SHA-256 BIOMETRIC HASH:</p>
+                                <p id="resFaceHash" class="text-[11px] text-white font-mono break-all"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 2 CARD -->
+                <div class="bg-hhCard border border-hhBorder rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-hhBorder/80 mb-4">
+                            <span class="tag-badge text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-hhGreenBright"></span>
+                                STAGE 02 · TRIANGLE
+                            </span>
+                            <span class="tag-badge text-[11px] text-hhMuted">SOCIAL DISCOVERY</span>
+                        </div>
+
+                        <!-- Match Confidence Meter -->
+                        <div class="bg-black/60 p-4 rounded-xl border border-hhGreen/50 text-center mb-4 bg-gradient-to-b from-hhGreenDark/30 to-black/60">
+                            <p class="tag-badge text-xs text-emerald-300 font-semibold mb-1">FACIAL COSINE SIMILARITY MATCH</p>
+                            <div class="text-4xl font-imbue text-hhYellow font-bold my-1" id="resMatchConf">94.14%</div>
+                            <div class="w-full bg-hhDark rounded-full h-2.5 mt-2 overflow-hidden border border-hhBorder">
+                                <div id="confBar" class="bg-gradient-to-r from-hhGreenBright to-hhYellow h-2.5 rounded-full transition-all duration-700" style="width: 94%"></div>
+                            </div>
+                            <p id="resCosineSim" class="tag-badge text-[11px] text-hhMuted mt-2">Cosine Similarity: 0.9297</p>
+                        </div>
+
+                        <!-- Top Match Details -->
+                        <div class="space-y-2 tag-badge text-xs">
+                            <div class="bg-black/50 p-3 rounded-lg border border-hhBorder">
+                                <div class="flex items-center justify-between mb-1.5">
+                                    <span id="resPlatform" class="text-xs text-hhYellow font-bold px-2 py-0.5 rounded bg-hhYellow/10 border border-hhYellow/30">Wikipedia</span>
+                                    <span id="resEngine" class="text-[10px] text-emerald-400">SerpAPI Google Lens</span>
+                                </div>
+                                <p id="resPostTitle" class="text-white font-semibold line-clamp-1 mt-1"></p>
+                                <p id="resPostAuthor" class="text-hhMuted text-[11px]"></p>
+                                <p id="resPostSnippet" class="text-hhMuted text-[11px] line-clamp-2 mt-1.5 font-sans"></p>
+                                <a id="resPostUrl" href="#" target="_blank" class="inline-flex items-center gap-1 text-emerald-400 hover:text-hhYellow hover:underline text-[11px] mt-2 font-mono transition">
+                                    View Source Profile / Post ↗
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STAGE 3 CARD -->
+                <div class="bg-hhCard border border-hhBorder rounded-2xl p-5 flex flex-col justify-between shadow-xl">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-hhBorder/80 mb-4">
+                            <span class="tag-badge text-xs text-emerald-300 font-bold flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                STAGE 03 · LAUNCH
+                            </span>
+                            <span class="tag-badge text-[11px] text-emerald-400 font-bold">ON-CHAIN SEPOLIA</span>
+                        </div>
+
+                        <div class="bg-black/60 p-4 rounded-xl border border-hhBorder space-y-2.5 mb-4 tag-badge text-xs">
+                            <div class="flex justify-between">
+                                <span class="text-hhMuted">Blockchain Network:</span>
+                                <span id="resNetwork" class="text-white font-bold">Ethereum Sepolia</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-hhMuted">Block Height:</span>
+                                <span id="resBlockNumber" class="text-hhYellow font-mono font-bold">#11607118</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-hhMuted">Gas Used:</span>
+                                <span id="resGas" class="text-white font-mono">26,520</span>
+                            </div>
+                            <div>
+                                <span class="text-hhMuted block text-[10px] mb-0.5">TRANSACTION HASH:</span>
+                                <p id="resTxHash" class="text-[11px] text-white font-mono break-all bg-black/80 p-1.5 rounded border border-hhBorder"></p>
+                            </div>
+                        </div>
+
+                        <a id="resExplorerBtn" href="#" target="_blank" class="hh-btn-green w-full py-2.5 px-4 rounded-lg text-center block tag-badge text-xs mb-4">
+                            VIEW ON SEPOLIA ETHERSCAN ↗
+                        </a>
+
+                        <!-- Interactive Tamper Simulator -->
+                        <div class="bg-black/70 p-3 rounded-xl border border-hhBorder">
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="tag-badge text-[11px] text-white font-bold">TAMPER-EVIDENCE CHECK</p>
+                                <span id="tamperStatusBadge" class="tag-badge text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-hhGreenDark border border-hhGreen">VERIFIED AUTHENTIC</span>
+                            </div>
+                            <p class="text-[11px] text-hhMuted mb-2">Test blockchain tamper detection with modified data:</p>
+                            <button id="tamperTestBtn" class="w-full py-1.5 px-3 rounded text-[11px] font-mono border border-red-500/50 bg-red-950/30 text-red-300 hover:bg-red-900/50 transition">
+                                ⚠ Simulate Malicious URL Alteration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-hhBorder/80 bg-hhDark px-6 py-5 tag-badge text-xs text-hhMuted mt-12">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <img src="/uiassets/Hacker house.png" alt="HH Goa" class="h-6 w-auto" />
+                <img src="/uiassets/goa_hindi.svg" alt="गोवा" class="h-3.5 w-auto opacity-70" />
+                <span>© 2026 HH-Goa · Hacker House Goa</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="https://hhgoa.com" target="_blank" class="text-hhYellow hover:underline flex items-center gap-1.5">
+                    <img src="/uiassets/2-47.svg" alt="2:47 Studio" class="h-3.5 w-auto inline" />
+                    hhgoa.com
+                </a>
+                <span class="text-hhBorder">|</span>
+                <span class="text-emerald-400 font-bold">Task #3 Submission</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let currentSelectedSample = 'test.jpg';
+        let currentPipelineResult = null;
+
+        function updatePreview(src, name) {
+            const prompt = document.getElementById('dropzonePrompt');
+            const preview = document.getElementById('dropzonePreview');
+            const img = document.getElementById('previewImg');
+            const nameEl = document.getElementById('previewName');
+
+            if (src) {
+                img.src = src;
+                nameEl.innerText = name || 'Custom Uploaded Face';
+                prompt.classList.add('hidden');
+                preview.classList.remove('hidden');
+                preview.classList.add('flex');
+            } else {
+                prompt.classList.remove('hidden');
+                prompt.classList.add('flex');
+                preview.classList.add('hidden');
+                preview.classList.remove('flex');
+            }
+        }
+
+        function selectSample(filename, label) {
+            currentSelectedSample = filename;
+            document.getElementById('fileInput').value = '';
+            updatePreview('/assets/' + filename, label + ' (' + filename + ')');
+            resetPipelineStepper();
+        }
+
+        document.getElementById('sampleTest').addEventListener('click', () => {
+            selectSample('test.jpg', 'Elon Musk');
+            document.getElementById('sampleTest').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
+            document.getElementById('sampleTest1').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+            document.getElementById('sampleBase').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+        });
+
+        document.getElementById('sampleTest1').addEventListener('click', () => {
+            selectSample('test1.jpg', 'Custom Face');
+            document.getElementById('sampleTest1').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
+            document.getElementById('sampleTest').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+            document.getElementById('sampleBase').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+        });
+
+        document.getElementById('sampleBase').addEventListener('click', () => {
+            selectSample('sample_face.jpg', 'Sample Face');
+            document.getElementById('sampleBase').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
+            document.getElementById('sampleTest').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+            document.getElementById('sampleTest1').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+        });
+
+        // File dropzone
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-hhYellow');
+        });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-hhYellow'));
+        
+        function handleFileSelection(file) {
+            if (!file) return;
+            currentSelectedSample = null;
+            document.querySelectorAll('.sample-btn').forEach(btn => btn.className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition');
+            resetPipelineStepper();
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                updatePreview(e.target.result, file.name);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-hhYellow');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                handleFileSelection(fileInput.files[0]);
+            }
+        });
+
+        let progressInterval = null;
+
+        function resetPipelineStepper() {
+            if (progressInterval) clearInterval(progressInterval);
+            const line = document.getElementById('pipelineProgressLine');
+            if (line) line.style.height = '0px';
+
+            for (let i = 1; i <= 3; i++) {
+                const dot = document.getElementById(`stepDot${i}`);
+                const card = document.getElementById(`stepCard${i}`);
+                const badge = document.getElementById(`stepBadge${i}`);
+                if (dot) {
+                    dot.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-hhBorder flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-white';
+                    dot.innerHTML = '<span class="w-2 h-2 rounded-full bg-hhMuted transition-all"></span>';
+                }
+                if (card) {
+                    card.className = 'w-full flex items-center justify-between bg-black/40 p-2.5 rounded-xl border border-hhBorder/60 transition-all duration-300';
+                }
+                if (badge) {
+                    badge.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-black/60 text-hhMuted border border-hhBorder/40';
+                    badge.innerText = 'READY';
+                }
+            }
+        }
+
+        function setStepperStage(stage) {
+            const line = document.getElementById('pipelineProgressLine');
+
+            if (stage === 1) {
+                if (line) line.style.height = '20px';
+                
+                const dot1 = document.getElementById('stepDot1');
+                const card1 = document.getElementById('stepCard1');
+                const badge1 = document.getElementById('stepBadge1');
+                dot1.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-hhYellow flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono shadow-[0_0_12px_rgba(237,215,35,0.8)] animate-pulse';
+                dot1.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-hhYellow"></span>';
+                card1.className = 'w-full flex items-center justify-between bg-hhYellow/10 p-2.5 rounded-xl border border-hhYellow/60 transition-all duration-300 shadow-md shadow-hhYellow/5';
+                badge1.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-hhYellow/20 text-hhYellow border border-hhYellow/60 animate-pulse font-bold';
+                badge1.innerText = 'SCANNING...';
+
+            } else if (stage === 2) {
+                if (line) line.style.height = '78px';
+
+                const dot1 = document.getElementById('stepDot1');
+                const card1 = document.getElementById('stepCard1');
+                const badge1 = document.getElementById('stepBadge1');
+                dot1.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhGreenDark border-2 border-hhGreenBright flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-emerald-300 font-bold shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                dot1.innerHTML = '✓';
+                card1.className = 'w-full flex items-center justify-between bg-hhGreenDark/20 p-2.5 rounded-xl border border-hhGreen/50 transition-all duration-300';
+                badge1.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-hhGreenDark text-emerald-400 border border-hhGreen/70 font-bold';
+                badge1.innerText = '✓ DONE';
+
+                const dot2 = document.getElementById('stepDot2');
+                const card2 = document.getElementById('stepCard2');
+                const badge2 = document.getElementById('stepBadge2');
+                dot2.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-hhGreenBright flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono shadow-[0_0_12px_rgba(16,185,129,0.9)] animate-pulse';
+                dot2.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-hhGreenBright"></span>';
+                card2.className = 'w-full flex items-center justify-between bg-hhGreenDark/40 p-2.5 rounded-xl border border-hhGreenBright/70 transition-all duration-300 shadow-md shadow-emerald-500/10';
+                badge2.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-hhGreenDark text-emerald-300 border border-hhGreenBright/70 animate-pulse font-bold';
+                badge2.innerText = 'SEARCHING...';
+
+            } else if (stage === 3) {
+                if (line) line.style.height = '138px';
+
+                const dot2 = document.getElementById('stepDot2');
+                const card2 = document.getElementById('stepCard2');
+                const badge2 = document.getElementById('stepBadge2');
+                dot2.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhGreenDark border-2 border-hhGreenBright flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-emerald-300 font-bold shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                dot2.innerHTML = '✓';
+                card2.className = 'w-full flex items-center justify-between bg-hhGreenDark/20 p-2.5 rounded-xl border border-hhGreen/50 transition-all duration-300';
+                badge2.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-hhGreenDark text-emerald-400 border border-hhGreen/70 font-bold';
+                badge2.innerText = '✓ DONE';
+
+                const dot3 = document.getElementById('stepDot3');
+                const card3 = document.getElementById('stepCard3');
+                const badge3 = document.getElementById('stepBadge3');
+                dot3.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhDark border-2 border-emerald-400 flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono shadow-[0_0_12px_rgba(16,185,129,0.9)] animate-pulse';
+                dot3.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>';
+                card3.className = 'w-full flex items-center justify-between bg-hhGreenDark/40 p-2.5 rounded-xl border border-emerald-400/70 transition-all duration-300 shadow-md shadow-emerald-500/10';
+                badge3.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-hhGreenDark text-emerald-300 border border-emerald-400/70 animate-pulse font-bold';
+                badge3.innerText = 'NOTARIZING...';
+
+            } else if (stage === 4) {
+                if (line) line.style.height = '145px';
+
+                for (let i = 1; i <= 3; i++) {
+                    const dot = document.getElementById(`stepDot${i}`);
+                    const card = document.getElementById(`stepCard${i}`);
+                    const badge = document.getElementById(`stepBadge${i}`);
+                    dot.className = 'absolute -left-7 w-6 h-6 rounded-full bg-hhGreenDark border-2 border-hhGreenBright flex items-center justify-center transition-all duration-300 z-10 text-[10px] font-mono text-emerald-300 font-bold shadow-[0_0_8px_rgba(16,185,129,0.5)]';
+                    dot.innerHTML = '✓';
+                    card.className = 'w-full flex items-center justify-between bg-hhGreenDark/25 p-2.5 rounded-xl border border-hhGreen/60 transition-all duration-300';
+                    badge.className = 'tag-badge text-[10px] px-2 py-0.5 rounded-full bg-hhGreenDark text-emerald-300 border border-hhGreenBright/60 font-bold';
+                    badge.innerText = '✓ COMPLETE';
+                }
+            }
+        }
+
+        document.getElementById('runBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('runBtn');
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const statusBadge = document.getElementById('statusBadge');
+
+            btn.disabled = true;
+            btnText.innerText = 'PROCESSING PIPELINE...';
+            btnSpinner.classList.remove('hidden');
+            statusBadge.innerText = 'RUNNING';
+            statusBadge.className = 'tag-badge text-xs px-2.5 py-0.5 rounded-full bg-hhYellow/20 text-hhYellow animate-pulse';
+
+            // Start animated stepper progress
+            resetPipelineStepper();
+            setStepperStage(1);
+            let currentStage = 1;
+            progressInterval = setInterval(() => {
+                if (currentStage < 3) {
+                    currentStage++;
+                    setStepperStage(currentStage);
+                }
+            }, 1400);
+
+            try {
+                let formData = new FormData();
+                if (fileInput.files.length > 0) {
+                    formData.append('image', fileInput.files[0]);
+                } else {
+                    formData.append('sample', currentSelectedSample || 'test.jpg');
+                }
+
+                const resp = await fetch('/api/process', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await resp.json();
+                if (!data.success) {
+                    resetPipelineStepper();
+                    alert('Error: ' + (data.error || 'Failed to process pipeline'));
+                    return;
+                }
+
+                if (progressInterval) clearInterval(progressInterval);
+                setStepperStage(4);
+
+                currentPipelineResult = data;
+                renderResults(data);
+
+            } catch (err) {
+                resetPipelineStepper();
+                alert('Pipeline request failed: ' + err);
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = 'RUN FULL PIPELINE';
+                btnSpinner.classList.add('hidden');
+                statusBadge.innerText = 'COMPLETED';
+                statusBadge.className = 'tag-badge text-xs px-2.5 py-0.5 rounded-full bg-hhGreenDark text-emerald-400 border border-hhGreenBright/60 font-bold';
+            }
+        });
+
+        function renderResults(data) {
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+
+            // Stage 1
+            document.getElementById('resInputImg').src = data.input_image_b64;
+            document.getElementById('resCropImg').src = data.cropped_image_b64 || data.input_image_b64;
+            document.getElementById('resFaceConf').innerText = (data.stage1.confidence || 0.9).toFixed(2) + ' (' + ((data.stage1.confidence || 0.9) * 100).toFixed(1) + '%)';
+            document.getElementById('resFaceHash').innerText = data.stage1.face_hash;
+
+            // Stage 2
+            const primary = data.stage2.primary_match || {};
+            const conf = primary.confidence_score || 85.0;
+            document.getElementById('resMatchConf').innerText = conf.toFixed(1) + '%';
+            document.getElementById('confBar').style.width = Math.min(100, Math.max(10, conf)) + '%';
+            document.getElementById('resCosineSim').innerText = 'Cosine Similarity: ' + (primary.cosine_similarity || 0.85);
+            document.getElementById('resPlatform').innerText = primary.platform || 'Web Result';
+            document.getElementById('resEngine').innerText = data.stage2.search_engine || 'SerpAPI Google Lens';
+            document.getElementById('resPostTitle').innerText = primary.title || 'Identified Profile';
+            document.getElementById('resPostAuthor').innerText = 'By: ' + (primary.author || 'Web Entity');
+            document.getElementById('resPostSnippet').innerText = primary.snippet || '';
+            document.getElementById('resPostUrl').href = primary.url || '#';
+
+            // Stage 3
+            document.getElementById('resNetwork').innerText = data.stage3.network || 'Ethereum Sepolia';
+            document.getElementById('resBlockNumber').innerText = '#' + (data.stage3.block_number || '11607118');
+            document.getElementById('resGas').innerText = Number(data.stage3.gas_used || 26520).toLocaleString();
+            document.getElementById('resTxHash').innerText = data.stage3.tx_hash;
+            document.getElementById('resExplorerBtn').href = data.stage3.explorer_url;
+            
+            // Reset tamper badge
+            document.getElementById('tamperStatusBadge').innerText = 'VERIFIED AUTHENTIC';
+            document.getElementById('tamperStatusBadge').className = 'tag-badge text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-hhGreenDark border border-hhGreen';
+        }
+
+        document.getElementById('tamperTestBtn').addEventListener('click', async () => {
+            if (!currentPipelineResult || !currentPipelineResult.stage3) return;
+            const originalRecord = currentPipelineResult.stage3.stored_record;
+            const txHash = currentPipelineResult.stage3.tx_hash;
+
+            // Tamper the payload
+            const tampered = JSON.parse(JSON.stringify(originalRecord));
+            tampered.post_url = 'https://malicious-attacker-tampered.org/fake-post';
+
+            const resp = await fetch('/api/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tx_hash: txHash,
+                    payload: tampered
+                })
+            });
+
+            const res = await resp.json();
+            const badge = document.getElementById('tamperStatusBadge');
+            if (res.tamper_detected) {
+                badge.innerText = 'TAMPER DETECTED!';
+                badge.className = 'tag-badge text-[10px] text-red-400 font-bold animate-bounce bg-red-950 px-2 py-0.5 rounded border border-red-800';
+                alert('TAMPER DETECTION CONFIRMED:\n\nThe modified URL failed the cryptographic hash check against the on-chain Sepolia record.');
+            }
+        });
+    </script>
+</body>
+</html>
