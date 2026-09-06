@@ -156,52 +156,78 @@
                     <span class="tag-badge text-xs px-2.5 py-0.5 rounded-full bg-hhGreenDark border border-hhGreen/50 text-emerald-300 font-bold">INPUT SCAN</span>
                 </div>
 
-                <div id="dropzone" class="border-2 border-dashed border-hhBorder hover:border-hhYellow/70 rounded-xl p-4 text-center cursor-pointer transition-all bg-black/40 hover:bg-hhGreenDark/30 flex flex-col items-center justify-center min-h-[180px] relative overflow-hidden group">
-                    <input type="file" id="fileInput" accept="image/*" class="hidden" />
+                <!-- Hidden Native File Input (Outside dropzone to prevent double event bubbling) -->
+                <input type="file" id="fileInput" accept="image/*" class="hidden" />
+
+                <!-- Dropzone Area -->
+                <div id="dropzone" class="border-2 border-dashed border-hhBorder hover:border-hhYellow rounded-xl p-5 text-center cursor-pointer transition-all bg-black/40 hover:bg-hhGreenDark/20 flex flex-col items-center justify-center min-h-[190px] relative overflow-hidden group">
                     
-                    <!-- Empty / Prompt State (Hidden when an image is selected) -->
-                    <div id="dropzonePrompt" class="hidden flex flex-col items-center justify-center py-2">
-                        <svg class="w-10 h-10 text-hhYellow mb-2 opacity-85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <p class="text-sm font-medium text-white">Drag &amp; drop your face photo here, or <span class="text-hhYellow underline font-semibold">browse</span></p>
+                    <!-- Empty / Prompt State (Active on initial load) -->
+                    <div id="dropzonePrompt" class="flex flex-col items-center justify-center py-3 pointer-events-none">
+                        <div class="w-14 h-14 rounded-full bg-hhDark border border-hhBorder/80 flex items-center justify-center mb-3 group-hover:border-hhYellow/70 group-hover:scale-110 transition-all">
+                            <svg class="w-7 h-7 text-hhYellow opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-semibold text-white">Click anywhere or drag &amp; drop face image here</p>
                         <p class="text-xs text-hhMuted mt-1 tag-badge">Supports JPG, PNG, WEBP (Deep Neural Net Auto-Alignment)</p>
                     </div>
 
-                    <!-- Selected Image Preview Overlay (Blocks & fills the dropzone) -->
-                    <div id="dropzonePreview" class="flex flex-col sm:flex-row items-center justify-center gap-5 w-full h-full p-2">
-                        <div class="relative group/preview flex-shrink-0">
-                            <img id="previewImg" src="/assets/test.jpg" alt="Selected Face Preview" class="h-28 w-28 sm:h-32 sm:w-32 object-cover rounded-xl border-2 border-hhYellow shadow-lg shadow-hhYellow/20 group-hover/preview:scale-105 transition-transform" />
+                    <!-- Selected Image Preview Overlay (Shown when user selects or drops image) -->
+                    <div id="dropzonePreview" class="hidden flex-col sm:flex-row items-center justify-center gap-5 w-full h-full p-2 pointer-events-none">
+                        <div class="relative flex-shrink-0">
+                            <img id="previewImg" src="" alt="Selected Face Preview" class="h-28 w-28 sm:h-32 sm:w-32 object-cover rounded-xl border-2 border-hhYellow shadow-lg shadow-hhYellow/20" />
                             <span class="absolute -top-2 -right-2 bg-emerald-400 text-black rounded-full w-5 h-5 flex items-center justify-center font-bold text-xs shadow-md">✓</span>
                         </div>
                         <div class="text-left flex flex-col justify-center space-y-1.5 max-w-sm">
                             <div class="flex items-center gap-2">
                                 <span class="tag-badge text-xs px-2 py-0.5 rounded bg-hhGreenDark text-emerald-400 border border-hhGreenBright/60 font-bold flex items-center gap-1">
                                     <span class="w-1.5 h-1.5 rounded-full bg-hhGreenBright animate-ping"></span>
-                                    PHOTO SELECTED
+                                    PHOTO LOADED
                                 </span>
                             </div>
-                            <p id="previewName" class="text-white font-semibold text-sm line-clamp-1 font-mono">Elon Musk (test.jpg)</p>
+                            <p id="previewName" class="text-white font-semibold text-sm line-clamp-1 font-mono">Custom Face</p>
                             <p class="text-hhMuted text-xs tag-badge">Ready for YuNet &amp; SFace embedding</p>
-                            <p class="text-hhYellow hover:underline text-xs tag-badge font-bold pt-1 cursor-pointer flex items-center gap-1">
-                                ↺ Click anywhere to replace or drop new photo
-                            </p>
+                            <span class="text-hhYellow text-xs tag-badge font-bold pt-1 flex items-center gap-1">
+                                ↺ Click anywhere to change photo
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sample Badges -->
-                <div class="mt-4 flex flex-wrap items-center gap-2">
-                    <span class="tag-badge text-xs text-hhMuted mr-1">Quick Samples:</span>
-                    <button id="sampleTest" class="sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition">
-                        ✦ Elon Musk (test.jpg)
-                    </button>
-                    <button id="sampleTest1" class="sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
-                        ✦ Custom Face (test1.jpg)
-                    </button>
-                    <button id="sampleBase" class="sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
-                        ✦ Sample Face (sample_face.jpg)
-                    </button>
+                <!-- Action & Sample Buttons Row -->
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="browseBtn" class="tag-badge text-xs px-3.5 py-1.5 rounded-lg bg-hhYellow text-black font-bold hover:bg-white transition flex items-center gap-1.5">
+                            📁 Browse File
+                        </button>
+                        <span class="tag-badge text-xs text-hhMuted ml-1">or Quick Samples:</span>
+                        <button type="button" id="sampleCarry" class="sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
+                            ✦ CarryMinati (carry.jpg)
+                        </button>
+                        <button type="button" id="samplePalak" class="sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
+                            ✦ Palak Tiwari (palak.jpg)
+                        </button>
+                        <button type="button" id="sampleTest" class="sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
+                            ✦ Elon Musk (test.jpg)
+                        </button>
+                        <button type="button" id="sampleTest1" class="sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition">
+                            ✦ Custom Face (test1.jpg)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- API Key Config (Optional for Live Gemini Vision AI) -->
+                <div class="mt-4 pt-3 border-t border-hhBorder/60">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <div class="flex items-center gap-1.5 text-xs text-hhYellow font-mono flex-shrink-0">
+                            <span>🔑 Gemini Vision Key:</span>
+                        </div>
+                        <input type="password" id="geminiApiKeyInput" placeholder="Paste Gemini Key for Universal Live Web AI Matching (AIzaSy...)" class="flex-1 bg-black/60 border border-hhBorder/80 rounded-lg px-3 py-1.5 text-xs font-mono text-white placeholder-hhMuted focus:outline-none focus:border-hhYellow transition" />
+                    </div>
+                    <p class="text-[10px] text-hhMuted mt-1.5 font-mono">
+                        💡 <span class="text-emerald-300 font-bold">Universal Discovery:</span> With a Gemini Key (free from <a href="https://aistudio.google.com" target="_blank" class="text-hhYellow underline">aistudio.google.com</a>), the AI performs open-web facial discovery on ANY person globally.
+                    </p>
                 </div>
             </div>
 
@@ -462,7 +488,8 @@
     </footer>
 
     <script>
-        let currentSelectedSample = 'test.jpg';
+        let currentSelectedSample = null;
+        let selectedUserFile = null;
         let currentPipelineResult = null;
 
         function updatePreview(src, name) {
@@ -478,6 +505,7 @@
                 preview.classList.remove('hidden');
                 preview.classList.add('flex');
             } else {
+                img.src = '';
                 prompt.classList.remove('hidden');
                 prompt.classList.add('flex');
                 preview.classList.add('hidden');
@@ -487,35 +515,60 @@
 
         function selectSample(filename, label) {
             currentSelectedSample = filename;
-            document.getElementById('fileInput').value = '';
+            selectedUserFile = null;
             updatePreview('/assets/' + filename, label + ' (' + filename + ')');
             resetPipelineStepper();
         }
 
-        document.getElementById('sampleTest').addEventListener('click', () => {
+        const apiKeyInput = document.getElementById('geminiApiKeyInput');
+        if (apiKeyInput) {
+            const savedKey = localStorage.getItem('hhg_gemini_api_key');
+            if (savedKey) apiKeyInput.value = savedKey;
+            apiKeyInput.addEventListener('input', () => {
+                localStorage.setItem('hhg_gemini_api_key', apiKeyInput.value.trim());
+            });
+        }
+
+        function highlightSampleBtn(activeBtn) {
+            document.querySelectorAll('.sample-btn').forEach(btn => btn.className = 'sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition');
+            if (activeBtn) activeBtn.className = 'sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
+        }
+
+        const carryBtn = document.getElementById('sampleCarry');
+        if (carryBtn) carryBtn.addEventListener('click', () => {
+            selectSample('carry.jpg', 'CarryMinati');
+            highlightSampleBtn(carryBtn);
+        });
+
+        const palakBtn = document.getElementById('samplePalak');
+        if (palakBtn) palakBtn.addEventListener('click', () => {
+            selectSample('palak.jpg', 'Palak Tiwari');
+            highlightSampleBtn(palakBtn);
+        });
+
+        const testBtn = document.getElementById('sampleTest');
+        if (testBtn) testBtn.addEventListener('click', () => {
             selectSample('test.jpg', 'Elon Musk');
-            document.getElementById('sampleTest').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
-            document.getElementById('sampleTest1').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
-            document.getElementById('sampleBase').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+            highlightSampleBtn(testBtn);
         });
 
-        document.getElementById('sampleTest1').addEventListener('click', () => {
+        const test1Btn = document.getElementById('sampleTest1');
+        if (test1Btn) test1Btn.addEventListener('click', () => {
             selectSample('test1.jpg', 'Custom Face');
-            document.getElementById('sampleTest1').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
-            document.getElementById('sampleTest').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
-            document.getElementById('sampleBase').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
+            highlightSampleBtn(test1Btn);
         });
 
-        document.getElementById('sampleBase').addEventListener('click', () => {
-            selectSample('sample_face.jpg', 'Sample Face');
-            document.getElementById('sampleBase').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhYellow text-hhYellow bg-black hover:bg-hhYellow hover:text-black transition';
-            document.getElementById('sampleTest').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
-            document.getElementById('sampleTest1').className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition';
-        });
-
-        // File dropzone
+        // File dropzone & Browse elements
         const dropzone = document.getElementById('dropzone');
         const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+
+        if (browseBtn) {
+            browseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.click();
+            });
+        }
 
         dropzone.addEventListener('click', () => fileInput.click());
         dropzone.addEventListener('dragover', (e) => {
@@ -523,11 +576,12 @@
             dropzone.classList.add('border-hhYellow');
         });
         dropzone.addEventListener('dragleave', () => dropzone.classList.remove('border-hhYellow'));
-        
+
         function handleFileSelection(file) {
             if (!file) return;
+            selectedUserFile = file;
             currentSelectedSample = null;
-            document.querySelectorAll('.sample-btn').forEach(btn => btn.className = 'sample-btn tag-badge text-xs px-3.5 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition');
+            document.querySelectorAll('.sample-btn').forEach(btn => btn.className = 'sample-btn tag-badge text-xs px-3 py-1.5 rounded-lg border border-hhBorder bg-black hover:border-hhGreenBright hover:text-emerald-300 transition');
             resetPipelineStepper();
 
             const reader = new FileReader();
@@ -539,16 +593,17 @@
 
         dropzone.addEventListener('drop', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             dropzone.classList.remove('border-hhYellow');
-            if (e.dataTransfer.files.length) {
-                fileInput.files = e.dataTransfer.files;
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                 handleFileSelection(e.dataTransfer.files[0]);
             }
         });
 
         fileInput.addEventListener('change', () => {
-            if (fileInput.files.length) {
+            if (fileInput.files && fileInput.files.length > 0) {
                 handleFileSelection(fileInput.files[0]);
+                fileInput.value = ''; // Reset so same file can be selected again
             }
         });
 
@@ -675,10 +730,26 @@
 
             try {
                 let formData = new FormData();
-                if (fileInput.files.length > 0) {
+                if (selectedUserFile) {
+                    formData.append('image', selectedUserFile);
+                } else if (fileInput.files && fileInput.files.length > 0) {
                     formData.append('image', fileInput.files[0]);
+                } else if (currentSelectedSample) {
+                    formData.append('sample', currentSelectedSample);
                 } else {
-                    formData.append('sample', currentSelectedSample || 'test.jpg');
+                    resetPipelineStepper();
+                    alert('Please select or upload a face image first!');
+                    btn.disabled = false;
+                    btnText.innerText = 'RUN FULL PIPELINE';
+                    btnSpinner.classList.add('hidden');
+                    statusBadge.innerText = 'READY';
+                    statusBadge.className = 'tag-badge text-xs px-2.5 py-0.5 rounded-full bg-hhGreenDark border border-hhGreen/50 text-emerald-400';
+                    return;
+                }
+
+                const geminiKey = document.getElementById('geminiApiKeyInput')?.value?.trim();
+                if (geminiKey) {
+                    formData.append('gemini_api_key', geminiKey);
                 }
 
                 const resp = await fetch('/api/process', {

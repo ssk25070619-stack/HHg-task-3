@@ -20,12 +20,26 @@ class VerificationPipeline:
         self.web_searcher = WebSearcher()
         self.blockchain_verifier = BlockchainVerifier()
 
-    def run(self, image_path: str, output_dir: str = "output") -> Dict[str, Any]:
+    def run(
+        self,
+        image_path: str,
+        output_dir: str = "output",
+        gemini_api_key: Optional[str] = None,
+        serpapi_key: Optional[str] = None,
+        google_vision_key: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Executes full 3-stage pipeline.
         """
         os.makedirs(output_dir, exist_ok=True)
         crop_path = os.path.join(output_dir, "cropped_face.jpg")
+
+        if gemini_api_key:
+            self.web_searcher.gemini_api_key = gemini_api_key
+        if serpapi_key:
+            self.web_searcher.api_key = serpapi_key
+        if google_vision_key:
+            self.web_searcher.google_vision_key = google_vision_key
 
         print("==================================================")
         print(" [STAGE 1] Face Detection & Feature Encoding")

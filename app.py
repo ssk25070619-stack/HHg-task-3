@@ -65,8 +65,18 @@ def process_image():
     if not image_path or not os.path.exists(image_path):
         return jsonify({'success': False, 'error': 'No valid image provided or file not found.'}), 400
 
+    gemini_key = request.form.get('gemini_api_key') or (request.json.get('gemini_api_key') if request.is_json else None) or request.headers.get('X-Gemini-Key') or os.getenv('GEMINI_API_KEY')
+    serpapi_key = request.form.get('serpapi_key') or (request.json.get('serpapi_key') if request.is_json else None) or os.getenv('SERPAPI_KEY')
+    google_vision_key = request.form.get('google_vision_key') or (request.json.get('google_vision_key') if request.is_json else None) or os.getenv('GOOGLE_VISION_API_KEY')
+
     try:
-        result = pipeline.run(image_path=image_path, output_dir='output')
+        result = pipeline.run(
+            image_path=image_path,
+            output_dir='output',
+            gemini_api_key=gemini_key,
+            serpapi_key=serpapi_key,
+            google_vision_key=google_vision_key
+        )
         if 'stage1' in result and 'encoding' in result['stage1']:
             enc = result['stage1']['encoding']
             if hasattr(enc, 'tolist'):
@@ -99,6 +109,10 @@ def verify_record():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', type=int, default=int(os.environ.get('PORT', 5001)))
+    args, _ = parser.parse_known_args()
+    port = args.port
     print(f'\n[HH GOA 2026] UI Server running at http://127.0.0.1:{port}\n')
     app.run(host='0.0.0.0', port=port, debug=False)
