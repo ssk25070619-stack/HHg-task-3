@@ -4,7 +4,8 @@ from src.blockchain_verifier import BlockchainVerifier
 
 @pytest.fixture
 def blockchain_verifier():
-    return BlockchainVerifier()
+    # Use dummy key for unit testing so local tests don't spend live testnet ETH
+    return BlockchainVerifier(private_key="0x0000000000000000000000000000000000000000000000000000000000000000")
 
 @pytest.fixture
 def sample_payload():

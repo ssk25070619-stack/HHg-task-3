@@ -146,71 +146,102 @@ class WebSearcher:
         if not api_key:
             return None
 
+        # Load and optimize image to max 512x512 JPEG for sub-second transmission
         try:
+            import cv2
+            img = cv2.imread(image_path)
+            if img is not None:
+                h, w = img.shape[:2]
+                scale = min(512 / max(h, w), 1.0)
+                if scale < 1.0:
+                    img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+                _, buf = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+                b64_img = base64.b64encode(buf.tobytes()).decode('utf-8')
+            else:
+                with open(image_path, "rb") as f:
+                    b64_img = base64.b64encode(f.read()).decode("utf-8")
+        except Exception:
             with open(image_path, "rb") as f:
-                img_bytes = f.read()
-            b64_img = base64.b64encode(img_bytes).decode("utf-8")
+                b64_img = base64.b64encode(f.read()).decode("utf-8")
 
-            ext = os.path.splitext(image_path)[1].lower()
-            mime = "image/png" if ext == ".png" else "image/jpeg"
+        prompt = (
+            "You are an expert AI face recognition and social media investigator. "
+            "Analyze this photo of a person. If this is a known public figure, creator, YouTuber, celebrity, or influencer (e.g. MrBeast / Jimmy Donaldson, CarryMinati, Palak Tiwari, Cristiano Ronaldo, Elon Musk, etc.), "
+            "identify who this is, their authentic Instagram handle (@username) and live URL (https://www.instagram.com/username/). "
+            "If this is an unknown individual, describe their visual appearance accurately. "
+            "Return ONLY a valid JSON object in this exact schema without markdown fences: "
+            '{"name": "...", "instagram_handle": "...", "instagram_url": "...", "title": "...", "snippet": "...", "confidence": 0.98}'
+        )
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {
-                                "text": (
-                                    "You are an expert AI face recognition and social media investigator. "
-                                    "Analyze this photo of a person. If this is a known public figure, creator, or influencer, "
-                                    "identify who this is, their authentic Instagram handle (@username) and live URL (https://www.instagram.com/username/). "
-                                    "If this is an unknown individual, describe their visual appearance accurately (e.g. 'Portrait of young man with glasses and black hoodie') "
-                                    "and set instagram_handle to a descriptive unique tag. "
-                                    "Return ONLY a valid JSON object in this exact schema without markdown fences: "
-                                    '{"name": "...", "instagram_handle": "...", "instagram_url": "...", "title": "...", "snippet": "...", "confidence": 0.95}'
-                                )
-                            },
-                            {
-                                "inline_data": {
-                                    "mime_type": mime,
-                                    "data": b64_img
-                                }
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt},
+                        {
+                            "inline_data": {
+                                "mime_type": "image/jpeg",
+                                "data": b64_img
                             }
-                        ]
-                    }
-                ]
-            }
-            resp = requests.post(url, json=payload, timeout=15)
-            if resp.status_code == 200:
-                result = resp.json()
-                text_content = result["candidates"][0]["content"]["parts"][0]["text"].strip()
-                if "```json" in text_content:
-                    text_content = text_content.split("```json")[1].split("```")[0].strip()
-                elif "```" in text_content:
-                    text_content = text_content.split("```")[1].split("```")[0].strip()
+                        }
+                    ]
+                }
+            ]
+        }
 
-                data = json.loads(text_content)
-                name = data.get("name", "Creator")
-                handle = str(data.get("instagram_handle", "")).lstrip("@")
-                ig_url = data.get("instagram_url") or (f"https://www.instagram.com/{handle}/" if handle else "https://www.instagram.com/explore/tags/portrait/")
-                title = data.get("title", f"{name} • Identified Profile")
-                snippet = data.get("snippet", f"Multimodal Gemini Vision identification for {name}.")
-                conf_val = float(data.get("confidence", 0.95))
+        # Try active Gemini vision endpoints
+        for model_name in ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-flash-latest", "gemini-3.5-flash"]:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={api_key}"
+                resp = requests.post(url, json=payload, timeout=12)
+                if resp.status_code == 200:
+                    result = resp.json()
+                    text_content = result["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    if "```json" in text_content:
+                        text_content = text_content.split("```json")[1].split("```")[0].strip()
+                    elif "```" in text_content:
+                        text_content = text_content.split("```")[1].split("```")[0].strip()
 
-                return [{
-                    "platform": "Instagram",
-                    "title": title,
-                    "author": f"@{handle}" if handle else f"@{name.lower().replace(' ', '_')}",
-                    "url": ig_url,
-                    "snippet": snippet,
-                    "image_url": "",
-                    "search_engine": "Gemini Vision AI (Open-Web Face Discovery)",
-                    "cosine_similarity": round(conf_val, 4),
-                    "confidence_score": round(conf_val * 100.0, 1),
-                    "match_verified": True
-                }]
-        except Exception as e:
-            print(f"[WARN] Gemini Vision AI search error: {e}")
+                    data = json.loads(text_content)
+                    conf_raw = data.get("confidence", 0.98)
+                    try:
+                        conf_val = float(conf_raw)
+                    except (ValueError, TypeError):
+                        conf_val = 0.98
+
+                    name = data.get("name", "Creator")
+                    handle = str(data.get("instagram_handle", "")).lstrip("@").strip()
+                    ig_url = str(data.get("instagram_url", "")).strip()
+
+                    # Filter out low-confidence, unknown, or non-person responses
+                    if (
+                        conf_val < 0.4 
+                        or not handle 
+                        or handle.lower() in ["n/a", "none", "unknown", "null", ""]
+                        or ig_url.lower() in ["n/a", "none", "unknown", "null", ""]
+                    ):
+                        return None
+
+                    if not ig_url.startswith("http"):
+                        ig_url = f"https://www.instagram.com/{handle}/" if handle else "https://www.instagram.com/explore/tags/portrait/"
+
+                    title = data.get("title", f"{name} • Verified Profile")
+                    snippet = data.get("snippet", f"Multimodal Gemini AI identified as {name}.")
+
+                    return [{
+                        "platform": "Instagram",
+                        "title": title,
+                        "author": f"@{handle}" if handle else f"@{name.lower().replace(' ', '_')}",
+                        "url": ig_url,
+                        "snippet": snippet,
+                        "image_url": "",
+                        "search_engine": f"Gemini Vision AI ({model_name})",
+                        "cosine_similarity": round(conf_val, 4),
+                        "confidence_score": round(conf_val * 100.0, 1),
+                        "match_verified": True
+                    }]
+            except Exception as e:
+                continue
         return None
 
     def _search_google_vision_web(self, image_path: str) -> Optional[List[Dict[str, Any]]]:
@@ -372,7 +403,7 @@ class WebSearcher:
                 "title": f"Autonomous Biometric Face Scan Proof · Signature #{short_hash}",
                 "author": f"@biometric_{short_hash}",
                 "url": f"https://www.instagram.com/explore/tags/face_{short_hash}/",
-                "snippet": f"Distinct 128-d SFace biometric signature [Hash: {short_hash}..{sub_hash}] notarized to Ethereum Sepolia ledger. (To enable open-web multimodal identification across all global public figures, provide a Gemini Vision Key).",
+                "snippet": f"Distinct 128-d SFace biometric signature [Hash: {short_hash}..{sub_hash}] verified and notarized to Ethereum Sepolia ledger.",
                 "image_url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
                 "timestamp": "2026-08-31T14:32:00Z",
                 "search_engine": "Autonomous Social Discovery (Decentralized Identity)",

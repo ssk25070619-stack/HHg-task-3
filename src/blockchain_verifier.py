@@ -63,20 +63,42 @@ class BlockchainVerifier:
         Broadcasts on-chain transaction to live EVM testnet using web3.py.
         Embeds the payload hash and verification metadata directly into transaction calldata.
         """
-        if not self.rpc_url or not self.private_key:
+        if not self.private_key:
             return None
         
         if self.private_key.startswith("0x00000000000000000000") or "your_testnet_private_key" in self.private_key:
             return None
 
-        try:
-            from web3 import Web3
-            w3 = Web3(Web3.HTTPProvider(self.rpc_url))
-            if not w3.is_connected():
-                print(f"[WARN] Unable to connect to EVM RPC at {self.rpc_url}")
-                return None
+        pk = self.private_key.strip()
+        if not pk.startswith("0x"):
+            pk = "0x" + pk
 
-            account = w3.eth.account.from_key(self.private_key)
+        rpc_candidates = [
+            self.rpc_url,
+            "https://ethereum-sepolia-rpc.publicnode.com",
+            "https://rpc.sepolia.org",
+            "https://1rpc.io/sepolia",
+            "https://sepolia.drpc.org"
+        ]
+        rpc_candidates = [r for r in rpc_candidates if r]
+
+        from web3 import Web3
+        w3 = None
+        for candidate_rpc in rpc_candidates:
+            try:
+                candidate_w3 = Web3(Web3.HTTPProvider(candidate_rpc, request_kwargs={"timeout": 15}))
+                if candidate_w3.is_connected():
+                    w3 = candidate_w3
+                    break
+            except Exception:
+                continue
+
+        if not w3:
+            print(f"[WARN] Unable to connect to any Sepolia EVM RPC endpoint.")
+            return None
+
+        try:
+            account = w3.eth.account.from_key(pk)
             sender_address = account.address
 
             # Calldata embedding with prefix for easy on-chain indexing
@@ -109,7 +131,7 @@ class BlockchainVerifier:
             except Exception:
                 tx_params['gasPrice'] = w3.eth.gas_price
 
-            signed_tx = w3.eth.account.sign_transaction(tx_params, self.private_key)
+            signed_tx = w3.eth.account.sign_transaction(tx_params, pk)
             raw_tx = getattr(signed_tx, 'raw_transaction', None) or getattr(signed_tx, 'rawTransaction', None)
             tx_hash_bytes = w3.eth.send_raw_transaction(raw_tx)
             tx_hash = tx_hash_bytes.hex()

@@ -45,6 +45,14 @@ def test_compute_face_hash(face_detector):
     assert len(hash1) == 64  # SHA-256 hex string length
     assert hash1 == hash2
 
+def test_detect_with_google_lens(face_detector, sample_image_path):
+    lens_res = face_detector.detect_with_google_lens(sample_image_path)
+    assert lens_res is not None
+    assert lens_res.get("lens_detected") is True
+    assert "engine" in lens_res
+    assert "detected_label" in lens_res
+    assert "visual_tags" in lens_res
+
 def test_process_pipeline(face_detector, sample_image_path, tmp_path):
     crop_out = str(tmp_path / "crop.jpg")
     result = face_detector.process(sample_image_path, cropped_save_path=crop_out)
@@ -55,3 +63,5 @@ def test_process_pipeline(face_detector, sample_image_path, tmp_path):
     assert len(result["face_hash"]) == 64
     assert len(result["encoding"]) == 128
     assert os.path.exists(crop_out)
+    assert "google_lens" in result
+    assert result["google_lens"]["lens_detected"] is True

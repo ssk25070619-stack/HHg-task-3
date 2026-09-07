@@ -68,6 +68,8 @@ def process_image():
     gemini_key = request.form.get('gemini_api_key') or (request.json.get('gemini_api_key') if request.is_json else None) or request.headers.get('X-Gemini-Key') or os.getenv('GEMINI_API_KEY')
     serpapi_key = request.form.get('serpapi_key') or (request.json.get('serpapi_key') if request.is_json else None) or os.getenv('SERPAPI_KEY')
     google_vision_key = request.form.get('google_vision_key') or (request.json.get('google_vision_key') if request.is_json else None) or os.getenv('GOOGLE_VISION_API_KEY')
+    private_key = request.form.get('private_key') or (request.json.get('private_key') if request.is_json else None) or os.getenv('PRIVATE_KEY')
+    rpc_url = request.form.get('rpc_url') or (request.json.get('rpc_url') if request.is_json else None) or os.getenv('RPC_URL')
 
     try:
         result = pipeline.run(
@@ -75,7 +77,9 @@ def process_image():
             output_dir='output',
             gemini_api_key=gemini_key,
             serpapi_key=serpapi_key,
-            google_vision_key=google_vision_key
+            google_vision_key=google_vision_key,
+            rpc_url=rpc_url,
+            private_key=private_key
         )
         if 'stage1' in result and 'encoding' in result['stage1']:
             enc = result['stage1']['encoding']

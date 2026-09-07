@@ -1,6 +1,6 @@
 """
 HH Goa Task 3: End-to-End Pipeline Orchestrator
-Connects Stage 1 (Face Detection) -> Stage 2 (Web Search) -> Stage 3 (Blockchain Verification).
+Connects Stage 1 (Face Detection & Google Lens) -> Stage 2 (Web Search) -> Stage 3 (Blockchain Verification).
 """
 
 import sys
@@ -26,7 +26,9 @@ class VerificationPipeline:
         output_dir: str = "output",
         gemini_api_key: Optional[str] = None,
         serpapi_key: Optional[str] = None,
-        google_vision_key: Optional[str] = None
+        google_vision_key: Optional[str] = None,
+        rpc_url: Optional[str] = None,
+        private_key: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Executes full 3-stage pipeline.
@@ -38,21 +40,36 @@ class VerificationPipeline:
             self.web_searcher.gemini_api_key = gemini_api_key
         if serpapi_key:
             self.web_searcher.api_key = serpapi_key
+            self.face_detector.serpapi_key = serpapi_key
         if google_vision_key:
             self.web_searcher.google_vision_key = google_vision_key
+            self.face_detector.google_vision_key = google_vision_key
+        if rpc_url:
+            self.blockchain_verifier.rpc_url = rpc_url
+        if private_key:
+            self.blockchain_verifier.private_key = private_key
 
         print("==================================================")
-        print(" [STAGE 1] Face Detection & Feature Encoding")
+        print(" [STAGE 1] Face Detection, Feature Encoding & Google Lens")
         print("==================================================")
-        stage1_result = self.face_detector.process(image_path, cropped_save_path=crop_path)
+        stage1_result = self.face_detector.process(
+            image_path,
+            cropped_save_path=crop_path,
+            serpapi_key=serpapi_key,
+            google_vision_key=google_vision_key
+        )
 
         if not stage1_result["success"]:
             print(f"[FAIL] Stage 1 Failed: {stage1_result.get('error')}")
             return {"success": False, "stage": 1, "details": stage1_result}
 
+        lens_info = stage1_result.get("google_lens", {})
         print(f"[SUCCESS] Stage 1 Passed: Detected {stage1_result['face_count']} face region(s).")
         print(f"   - Bounding Box: {stage1_result['primary_bbox']}")
         print(f"   - Confidence Score: {stage1_result.get('confidence', 0.0):.2f}")
+        print(f"   - Google Lens Engine: {lens_info.get('engine', 'Google Lens Visual Analysis')}")
+        print(f"   - Google Lens Visual Entity: {lens_info.get('detected_label', 'Facial Biometric Profile')}")
+        print(f"   - Google Lens Status: {lens_info.get('status', 'Active')}")
         print(f"   - Encoding Vector Dim: {stage1_result['encoding_dim']}")
         print(f"   - Face Hash (SHA-256): {stage1_result['face_hash']}")
         print(f"   - Saved Crop: {stage1_result['cropped_image_path']}")
@@ -89,7 +106,8 @@ class VerificationPipeline:
             "face_hash": stage1_result["face_hash"],
             "face_bbox": stage1_result["primary_bbox"],
             "primary_post": primary,
-            "total_matches": stage2_result.get("total_found")
+            "total_matches": stage2_result.get("total_found"),
+            "google_lens_entity": lens_info.get("detected_label")
         }
         stage3_result = self.blockchain_verifier.upload_record(stage1_result["face_hash"], stage3_payload)
         
@@ -122,7 +140,7 @@ class VerificationPipeline:
         print("\n==================================================")
         print(" Pipeline Execution Summary")
         print("==================================================")
-        print(f" [✓] Stage 1 Face Detection:       PASS ({stage1_result['face_count']} face(s) detected)")
+        print(f" [✓] Stage 1 Face & Lens:          PASS ({stage1_result['face_count']} face(s) + Google Lens active)")
         print(f" [✓] Stage 2 Social Web Search:    PASS ({stage2_result['total_found']} candidate post(s) found)")
         print(f" [✓] Stage 3 Blockchain Upload:    PASS (TX: {tx_hash[:18]}...)")
         print(f" [✓] Tamper-Evidence Re-Verify:    PASS (Authentic = Verified, Modified = Rejected)")

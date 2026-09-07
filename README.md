@@ -22,9 +22,10 @@ Given any input face scan, the system:
         │
         ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ STAGE 1: Face Detection & Biometric Embedding               │
+│ STAGE 1: Face Detection, Embedding & Google Lens Inspection │
 │ • OpenCV YuNet Face Detection & 5-point Landmark Alignment  │
 │ • SFace 128-dimensional Normalized Feature Embedding        │
+│ • Google Lens Visual Entity & Landmark Inspection           │
 │ • SHA-256 Deterministic Biometric Hash Creation             │
 └──────────────────────────────┬──────────────────────────────┘
                                │
@@ -51,8 +52,9 @@ Given any input face scan, the system:
 
 ## ✨ Key Features
 
-- **Biometric Feature Encoding (Stage 1)**
+- **Biometric Feature Encoding & Google Lens Inspection (Stage 1)**
   - Dual ONNX deep learning models (`face_detection_yunet_2023mar.onnx` & `face_recognition_sface_2021dec.onnx`).
+  - Google Lens visual analysis and entity tag extraction for pre-validation of facial crops.
   - Generates 128-d L2-normalized feature embeddings.
   - Computes a deterministic SHA-256 biometric face hash, ensuring raw biometric images are never exposed on-chain.
 
